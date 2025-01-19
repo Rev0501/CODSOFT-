@@ -1,0 +1,50 @@
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import pandas as pd
+data = [
+    {"title": "Inception", "genre": "Sci-Fi", "description": "A mind-bending thriller about dreams within dreams."},
+    {"title": "The Dark Knight", "genre": "Action", "description": "A heroic battle against crime in Gotham City."},
+    {"title": "Interstellar", "genre": "Sci-Fi", "description": "A space exploration story to save humanity."},
+    {"title": "The Godfather", "genre": "Crime", "description": "A tale of a powerful mafia family."},
+    {"title": "Forrest Gump", "genre": "Drama", "description": "An inspiring story of a man's extraordinary life."},
+]
+df = pd.DataFrame(data)
+df['content'] = df['genre'] + " " + df['description']
+tfidf = TfidfVectorizer(stop_words="english")
+tfidf_matrix = tfidf.fit_transform(df['content'])
+cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+def recommend_movies(movie_title, cosine_sim=cosine_sim):
+    if movie_title not in df['title'].values:
+        print(f"\nMovie '{movie_title}' not found in the dataset.")
+        return
+
+    
+    idx = df.index[df['title'] == movie_title][0]
+
+    
+    sim_scores = list(enumerate(cosine_sim[idx]))
+
+  
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:]
+
+    
+    top_movies = [df['title'][i[0]] for i in sim_scores[:3]]
+
+    print(f"\nMovies similar to '{movie_title}':")
+    for movie in top_movies:
+        print(f"- {movie}")
+
+def main():
+    print("Welcome to the Content-Based Movie Recommendation System!")
+    print("Type the name of a movie to get recommendations.\n")
+
+    while True:
+        movie_title = input("Enter a movie title (or type 'exit' to quit): ").strip()
+        if movie_title.lower() == "exit":
+            print("Goodbye!")
+            break
+        recommend_movies(movie_title)
+
+
+if __name__ == "__main__":
+    main()
